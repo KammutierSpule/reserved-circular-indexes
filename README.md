@@ -17,9 +17,28 @@ Example:
 	- Reuse the same buffer for in-buffer modification without need to realloc a new buffer or have a temporary buffer. (eg: transform upper case to low case and transmit).
 	- On slow systems (eg: microcontrollers) and large buffers, reserve the buffer index until you have process it, while able to use the circular buffer for other proposes (eg: system log, data log).
 
+## ASCII art
+
+```
+Buffer Slots (Index):     0     1     2     3     4     5     6     7
+                         ----- ----- ----- ----- ----- ----- ----- -----
+States:                 |  R  |  T  |  U  |  U  |  U  |  HU |  H  |  F  |
+                         ----- ----- ----- ----- ----- ----- ----- -----
+                           ↑     ↑                       ↑     ↑      \_ Free slot
+                    Reserved     Tail          Head in use     Head (next push)
+
+Legend:
+- Reserved (R):      index reserved for delayed processing; won't be overwritten by pushs of the head.
+- Tail (T):          oldest valid item (to pop and reserve).
+- Used (H):          used blocks (body of the snake).
+- Head in use (HU):  current index of the front head.
+- Head (H):          where the next push (write) will go (a free slot in this case)
+- Free (F):          a free empty slot.
+```
+
 ## Concepts
 ### Circular Buffer
-Th well known Circular Buffer concept with the front head will be increasing and a tail pointer. The head is virtually connected to the tail and will overwrite it if no slots left.
+The well known Circular Buffer concept with the front head will be increasing and a tail pointer. The head is virtually connected to the tail and will overwrite it if no free slots are available.
 
 ### FIFO
 First In, First Out nature of a circular buffer.
@@ -28,7 +47,6 @@ First In, First Out nature of a circular buffer.
   - Logs and sensor data storage.
   - Low to high-end range microcontrollers with RAM limitations.
   - Reuse the same storage buffer as a temporary storage for packing transmition or transformation.
-
 
 ## Usage
 To integrate the code on your project, you need to consider only the following two folders:
